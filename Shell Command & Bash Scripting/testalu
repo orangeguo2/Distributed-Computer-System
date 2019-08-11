@@ -1,0 +1,195 @@
+#!/bin/sh
+##
+# This script tests the arithmetic logic unit (ALU)
+# word-oriented arithmetic and logic operations
+
+# directory of this script
+if [ -z "$dir" ]; then
+    dir="$(dirname $0)"
+    app="$(basename $0)"
+fi
+
+##
+# calls 'word' command on same path as this script
+word() { echo $($dir/word $*); }
+
+##
+# calls 'alu' command on same path as this script
+alu() { echo $($dir/alu $*); }
+
+# include word definitions
+source "$dir/worddefs"
+
+# include alu functions
+#source "$dir/alu"  # optional
+
+# include unit test functions
+source "$dir/unittest"
+
+##
+# test basic word functions
+test_word() {
+    # test conversion from hex to word
+    local w1=$(word "0xF0A6")
+    assertWordEqual "$w1" "1111000010100110"
+
+    # check that initial bits are set
+    assertEqual $(word $w1 0) 0
+    assertEqual $(word $w1 7) 1
+    assertEqual $(word $w1 8) 0
+    assertEqual $(word $w1 $wordtopbit) 1
+    
+    # reverse those bits    
+    w1=$(word $w1 0 1)
+    w1=$(word $w1 7 0)
+    w1=$(word $w1 8 1)
+    w1=$(word $w1 $wordtopbit 0)
+
+    # check that modified bits are set
+    assertEqual $(word $w1 0) 1
+    assertEqual $(word $w1 7) 0
+    assertEqual $(word $w1 8) 1
+    assertEqual $(word $w1 $wordtopbit) 0
+}
+
+
+
+## 
+# test math functions (add, sub, mul, div, negative)
+test_math() {
+    w1="1111111111111111"
+    w2="1111111111111100"
+
+    # test top bit of word
+    assertTrue "$(word $w2 $wordtopbit)"
+
+    # test difference of w1 and w2
+    assertWordEqual "$(alu sub $w1 $w2)" "0000000000000011"
+    w11="1111111111111111"
+    w12="0000000000000001"
+
+    w13=$(alu add $w11 $w12)
+    assertWordEqual $w13 $zeroword
+
+    w14=$(alu sub $w11 $w12)
+    assertWordEqual $w14 "1111111111111110"
+
+    w15=$(alu sub $w14 $w11)
+    assertWordEqual $w15 "1111111111111111"
+
+    w16=$(alu mul $w14 $w14)
+    assertWordEqual $w16 "0000000000000100" 
+
+    w17=$(alu add $w14 $w15)
+    assertWordEqual $w17 "1111111111111101" 
+
+    w18=$(alu minus $w14)
+    assertWordEqual $w18 "0000000000000010" 
+
+    w19110_total=$(alu div $w16 $w18)
+    w19=${w19110_total:0:$wordsize}
+    w110=${w19110_total:$((wordsize+1))}
+    assertWordEqual $w19 "0000000000000010" 
+    assertWordEqual $w110 "0000000000000000" 
+
+    w1112_total=$(alu div $w16 $w14)
+    w111=${w1112_total:0:$wordsize}
+    w112=${w1112_total:$((wordsize+1))}
+    assertWordEqual $w111 "1111111111111110" 
+    assertWordEqual $w112 "0000000000000000" 
+
+    w1314_total=$(alu div $w17 $w14)
+    # echo $w1314_total
+    w113=${w1314_total:0:$wordsize}
+    w114=${w1314_total:$((wordsize+1))}
+    assertWordEqual $w113 "0000000000000001" 
+    assertWordEqual $w114 "1111111111111111" 
+}
+
+# /**
+#  * Test compare functions (lt, eq, ge)
+#  */
+test_compare(){
+    w0="1111111111111110"
+    w1="1111111111111111" 
+    w2="0000000000000000" 
+    w3="0000000000000001" 
+    w4="0000000000000010" 
+
+    assertTrue $(alu testlt $minword)
+    assertTrue $(alu testlt $w0)
+    assertTrue $(alu testlt $w1)
+    assertFalse $(alu testlt $w2)
+    assertFalse $(alu testlt $w3)
+    assertFalse $(alu testlt $w4)
+    assertFalse $(alu testlt $maxword)
+
+    assertFalse $(alu testeq $minword)
+        assertFalse $(alu testeq $w0)
+            assertTrue $(alu testeq $w2)
+
+
+    assertFalse $(alu testge $minword)
+        assertFalse $(alu testge $w0)
+            assertTrue $(alu testge $w2)
+
+}
+
+# /**
+#  * Test shift functions (ash, csh, lsh)
+#  */
+test_shift(){
+
+    w0="0000000000000000" 
+    w1="0000000011111111"
+    w2="0000111111110000" 
+    w3="1111111100000000" 
+    w4="1111000000000000" 
+    w5="0000000000001111"
+    w6="1111000000001111"
+
+    assertStringEqual $(alu ash $w0 0) $w0
+    assertStringEqual $(alu ash $w1 $((wordsize/2))) "0111111100000000" 
+    assertStringEqual $(alu ash $w3 $((-wordsize/2))) "1111111111111111"
+    assertStringEqual $(alu csh $w0 0) $w0
+    assertStringEqual $(alu csh $w1 $((wordsize/2))) $w3
+    assertStringEqual $(alu csh $w3 $((-wordsize/2))) $w1
+    assertStringEqual $(alu lsh $w0 0) $w0
+    assertStringEqual $(alu lsh $w1 $((wordsize/2))) $w3
+    assertStringEqual $(alu lsh $w3 $((-wordsize/2))) $w1
+    assertStringEqual $(alu mask $w0 0) $w0
+    assertStringEqual $(alu mask $w1 $((wordsize/2))) $w1
+    assertStringEqual $(alu mask $w1 $((-wordsize/2))) $w0   
+}
+# /**
+#  * Test logical functions (and, or, not, xor, mask)
+#  */
+test_logic(){
+    w0="0000000000000000" 
+    w1="0000000011111111"
+    w2="0000111111110000" 
+    w3="1111111100000000" 
+    w4="1111000000000000" 
+    w5="0000000000001111"
+    w6="1111000000001111"
+
+
+    assertStringEqual $(alu and $w0 $w1) $w0
+    assertStringEqual $(alu and $w1 $w3) $w0
+    assertStringEqual $(alu or $w0 $w1) $w1
+    assertStringEqual $(alu or $w1 $w3) "1111111111111111"
+    assertStringEqual $(alu xor $w0 $w1) $w1
+    assertStringEqual $(alu xor $w3 $w1) "1111111111111111"
+    assertStringEqual $(alu not $w0) "1111111111111111"
+    assertStringEqual $(alu not $w1) $w3
+
+}
+
+runUnitTest test_word
+runUnitTest test_compare
+runUnitTest test_shift
+runUnitTest test_math
+runUnitTest test_logic
+
+# show unit test summary
+unitTestSummary

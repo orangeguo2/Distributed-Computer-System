@@ -1,0 +1,46 @@
+#!/bin/sh
+##
+# These values define the parameters for a word:
+#
+# wordbytes: bytes per word (default=2)
+# wordsize: bits per word
+# wordtopbit: index of word top bit
+# wordendian: endian order of word: bitendian or littleendian (default=bigendian)
+# zeroword: word value 0
+# minword: largest negative number
+# maxword: largest positive number
+
+# number of bytes per word
+export wordbytes=${wordbytes:-2}
+
+# number of bits per word
+export wordsize=$((8*$wordbytes))
+
+# bit number of top bit
+export wordtopbit=$((wordsize-1))
+
+# word format (bigendian, littleendian)
+export wordendian=${wordendian:-bigendian}
+
+# wordsize binary representation of 0
+export zeroword=$(for ((i=1;i<=$wordsize;i++)); do printf 0; done)
+
+# wordsize binary representation of largest negative number
+export minword=$(printf 1; for ((i=2;i<=$wordsize;i++)); do printf 0; done)
+
+# wordsize binary representation of largest positive number
+export maxword=$(printf 0; for ((i=2;i<=$wordsize;i++)); do printf 1; done)
+
+##
+# Returns the bottom bit of a number
+# @param the number
+# @return the bottom bit
+toBit() { echo $(($1 & 1)); }
+
+##
+# Returns the logical not of a bit
+# @param the bit
+# @return the logical not of the bit
+notBit() { echo $((1 - $(toBit $1))); }
+
+

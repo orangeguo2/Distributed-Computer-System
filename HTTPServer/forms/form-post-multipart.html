@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>  
+<html>
+<head>
+<style>
+.error {color: #FF0000;}
+</style>
+</head>
+<body> 
+
+<h2>Form Example Using POST with Multi-part</h2>
+<p><span class="error">* required field</span></p>
+
+<form action="form-multipart-out.txt" method="post" enctype="multipart/form-data">  
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" value="">
+  <span class="error">* </span>
+  <br><br>
+  <label for="email">Email:</label>
+  E-mail: <input type="text" id="email" name="email" value="">
+  <span class="error">* </span>
+  <br><br>
+  <label for="website">Website:</label> 
+  <input type="text" id="website" name="website" value="">
+  <span class="error"></span>
+  <br><br>
+  <label for="profile_pic">Choose a profile picture:</label>
+  <input type="file"
+       id="profile_pic" name="profile_pic"
+       accept="image/png, image/jpeg">
+  <br><br>
+  <label for="comment" style="vertical-align: top;")>Comment:</label>
+  <textarea id="comment" name="comment" rows="5" cols="40"></textarea>
+  <br><br>
+  <fieldset style="display: inline-block;">
+  <legend>Gender: <span class="error">*</span></legend>
+    <label><input type="radio" name="gender"  value="female">Female</label>
+    <label><input type="radio" name="gender"  value="male">Male</label>
+    <label><input type="radio" name="gender"  value="other">Other</label>  
+  </fieldset>
+  <br><br>
+  <input type="submit" name="submit" value="Submit">  
+  <input type="hidden" name="survey-code" value="32937">  
+</form>
+
+</body>
+</html>

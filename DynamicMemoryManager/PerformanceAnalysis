@@ -1,0 +1,44 @@
+Individual Assignment
+
+To simplify and save time, all performance analysis is only based on short1-bar.rep.
+
+
+
+mm_simple_heap.c 
+index  leaks errors     ops      secs    Kops  file
+    1      0      0      12  0.000043     279  ../short1-bal.rep
+
+
+mm_malloc_heap.c 
+index  leaks errors     ops      secs    Kops  file
+    1      0      0      12  0.000042     285  ../short1-bal.rep
+    
+    
+mm_kr_heap.c 
+index  leaks errors     ops      secs    Kops  file
+1      0      0      12  0.000045     266  ../short1-bal.rep
+
+
+mm_dlink_implicit_firstCase_heap.c
+index  leaks errors     ops      secs    Kops  file
+    1      0      0      12  0.000043     279  ../short1-bal.rep
+    
+ 
+mm_dlink_explicit_firstCase_heap.c 
+index  leaks errors     ops      secs    Kops  file
+    1      0      0      12  0.000042     285  ../short1-bal.rep
+
+mm_dlink_explicit_bestCase_heap.c 
+index  leaks errors     ops      secs    Kops  file
+    1      0      0      12  0.000048     249  ../short1-bal.rep
+
+
+
+
+ Whether the order of free nodes on the free list makes a difference?
+ It will make a difference. Order by memory address can facilitate the coalesce and make it easy.
+ While if we order the free node by its size, 
+ it will facilitate the "looking for block to allocate" process, especially for "Best fit algorithm". 
+ But it will make more complicate about coalesce.
+ 
+Although it is not clear on short1, the performance does improve when processing all traces files.

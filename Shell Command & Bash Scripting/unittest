@@ -1,0 +1,174 @@
+#!/bin/sh
+##
+# Definitions for unit test functions.
+
+# assertion counts
+assertFail=0;
+assertPass=0
+assertCount=0
+
+##
+# Assert actual and expected words are equal.
+# @param actual word
+# @param expected word
+assertWordEqual() {
+    assertCount=$((assertCount+1))
+    if [ "$1" != "$2" ]; then
+        echo "assertWordEqual($assertCount): actual: $1 expected: $2" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual and expected words are not equal.
+# @param actual word
+# @param expected word
+assertWordNotEqual() {
+    assertCount=$((assertCount+1))
+    if [ "$1" = "$2" ]; then
+        echo "assertWordNotEqual($assertCount): actual: $1 expected: $2" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual and expected strings are equal.
+# @param actual string
+# @param expected string
+assertStringEqual() {
+    assertCount=$((assertCount+1))
+    if [ "$1" != "$2" ]; then
+        echo "assertStringEqual($assertCount): actual: \x22$1\x22 expected: \x22$2\x22" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual and expected strings are not equal.
+# @param actual string
+# @param expected string
+assertStringNotEqual() {
+    assertCount=$((assertCount+1))
+    if [ "$1" = "$2" ]; then
+        echo "assertStringNotEqual($assertCount): actual: \x22$1\x22 expected: \x22$2\x22" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual and expected numerical values are equal.
+# @param actual value
+# @param expected value
+assertEqual() {
+    assertCount=$((assertCount+1))
+    if [ "$1" -ne "$2" ]; then
+        echo "assertEqual($assertCount): actual: $1 expected: $2" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual and expected numerical values are not equal.
+# @param actual value
+# @param expected value
+assertNotEqual() {
+    assertCount=$((assertCount+1))
+    if [ "$1" -eq "$2" ]; then
+        echo "assertNotEqual($assertCount): actual: $1 expected: $2" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual value is true (!= 0)
+# @param actual value
+assertTrue() {
+    assertCount=$((assertCount+1))
+    if [ "$1" = "0" ]; then
+        echo "assertTrue($assertCount): actual: $1" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Assert actual value is false (= 0)
+# @param actual value
+assertFalse() {
+    assertCount=$((assertCount+1))
+    if [ "$1" != "0" ]; then
+        echo "assertFalse($assertCount): actual: $1" 1>&2
+        assertFail=$((assertFail+1))
+        return 1
+    fi
+    assertPass=$((assertPass+1))
+    return 0;
+}
+
+##
+# Run unit test function.
+# @return 0 if all passed, 1 if asserts failed
+runUnitTest() {
+    local unitTest=$1
+
+	# record assertFail for comparison after test
+    local unitTestFail=$assertFail
+
+	# reset assert count for unit test
+    local unitTestAssertCount=$assertCount
+    assertCount=0
+
+    # run test
+    echo "Running unit test $unitTest" 1>&2
+    $unitTest    
+
+    # restore assert count
+    assertCount=$((assertCount+unitTestAssertCount))    
+
+    #report test status
+    if [ $assertFail -eq $unitTestFail ]; then
+        echo "Unit test $unitTest passed" 1>&2
+	    echo "" 1>&2
+	    return 0
+    else
+        echo "Unit test $unitTest failed" 1>&2
+	    echo "" 1>&2
+	    return 1
+    fi
+}
+
+##
+# Show unit test summary.
+# @return 0 if all passed, 1 if asserts failed
+unitTestSummary() {
+    echo "Test summary:" 1>&2
+    echo "asserts passed: $assertPass" 1>&2
+    echo "asserts failed: $assertFail" 1>&2
+    echo "total asserts:  $assertCount" 1>&2
+    if [ $assertFail -eq 0 ]; then
+    	return 0
+   	else
+   		return 1
+   	fi
+}
+
